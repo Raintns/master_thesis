@@ -1,0 +1,11 @@
+aliengo:
+  base_frame: base
+  foot_topics:
+    - /visual/FL_foot_contact/the_force
+    - /visual/FR_foot_contact/the_force
+    - /visual/RL_foot_contact/the_force
+    - /visual/RR_foot_contact/the_force
+    #- /chrono/fl_wrench
+    #- /chrono/fr_wrench
+    #- /chrono/rl_wrench
+    #- /chrono/rr_wrench

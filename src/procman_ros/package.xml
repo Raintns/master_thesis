@@ -1,0 +1,14 @@
+<package format="3">
+  <name>procman_ros</name>
+  <version>0.1.7</version>
+  <description>Procman-ros is a tool for managing many processes distributed over one or more computers using ROS message passing. It is a fork of github.com/ashuang/procman.</description>
+  <maintainer email="mcamurri@robots.ox.ac.uk">Marco Camurri</maintainer>
+  <maintainer email="michal@robots.ox.ac.uk">Michal Staniaszek</maintainer>
+  <license>BSD-3</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+</package>

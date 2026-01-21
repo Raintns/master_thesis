@@ -1,0 +1,29 @@
+actions: []
+authors: Brolin
+brief: ''
+bugtracker: ''
+depends:
+- std_msgs
+- tf2
+- pinocchio
+- message_runtime
+- geometry_msgs
+- rospy
+- sensor_msgs
+- roscpp
+- message_filters
+- message_filteres
+- message_generation
+- catkin
+- tf2_ros
+description: The aliengo_dynamics_computer package
+license: MIT
+maintainers: Brolin <Brolin@todo.todo>
+msgs:
+- PinocchioDebug
+- ReactionForce
+- FootForces
+package_type: package
+repo_url: ''
+srvs: []
+url: ''

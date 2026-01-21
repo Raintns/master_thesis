@@ -1,0 +1,49 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/isaac/terrain_property_prediction/devel/include/**",
+        "/home/isaac/catkin_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/a1_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/aliengo_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/aliengo_dynamics_computer/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/anymal_b_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/anymal_c_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/astro_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/bruno_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/champ/champ/include/**",
+        "/home/isaac/terrain_property_prediction/src/champ/champ_base/include/**",
+        "/home/isaac/terrain_property_prediction/src/champ/champ_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/dkitty_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/dream_walker_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/go1_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/littledog_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/mini_cheetah_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/mini_pupper_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/descriptions/spot_mini_mini/mini_ros/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/open_quadruped_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/opendog_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/procman_ros/include/**",
+        "/home/isaac/terrain_property_prediction/src/robot_localization/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/spot_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/spotmicro_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/stanford_pupper_config/include/**",
+        "/home/isaac/terrain_property_prediction/src/robots/configs/stochlite_config/include/**",
+        "/home/isaac/catkin_ws/src/robots/descriptions/unitree_ros/unitree_controller/include/**",
+        "/home/isaac/terrain_property_prediction/src/yocs_velocity_smoother/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

@@ -1,0 +1,9 @@
+*.pyc
+*.swp
+
+# build directories
+build
+pod-build
+
+# doxygen output
+/doc/html

@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.0.2)
+project(aliengo_wild_visual_navigation)
+
+find_package(catkin REQUIRED COMPONENTS
+  rospy
+  nav_msgs
+  sensor_msgs
+  std_msgs
+  wild_visual_navigation_ros
+)
+
+catkin_package(
+  CATKIN_DEPENDS
+)
+
+message(${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY launch Media worlds
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+############
+## Python ##
+############
+catkin_install_python(PROGRAMS scripts/carrot_follower.py
+                               scripts/aliengo_state_converter_node.py
+                               scripts/gazebo_world_publisher.py
+                               scripts/aliengo_force_state_converter_node.py
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
