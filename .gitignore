@@ -23,3 +23,16 @@ src/wild_visual_navigation/.tmp_state_dict.pt
 # src/cpr_gazebo/
 
 src/wild_visual_navigation/.tmp_state_dict.pt
+# catkin build artifacts
+build/
+devel/
+logs/
+.catkin_tools/
+
+# WVN generated outputs / checkpoints
+src/wild_visual_navigation/results/
+src/wild_visual_navigation/assets/graph/*.pt
+
+# python cache
+__pycache__/
+*.pyc
