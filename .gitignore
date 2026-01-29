@@ -22,3 +22,4 @@ src/wild_visual_navigation/.tmp_state_dict.pt
 # optional: if you do NOT want to track these packages in this repo
 # src/cpr_gazebo/
 
+src/wild_visual_navigation/.tmp_state_dict.pt
