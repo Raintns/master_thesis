@@ -1,7 +1,5 @@
 # master_thesis (AlienGo + Wild Visual Navigation)
 
-## Quick Start
-
 ### 0) Prerequirement
 Install Pinocchio
 ```bash
@@ -63,9 +61,10 @@ roslaunch champ_teleop teleop.launch
 for the first time running with 2> >(grep -v TF_REPEATED_DATA buffer_core) will have error,so for the first time running just run without this half.
 
 ### 5) further more possible issue:
-5.1 the gazebo world may missing the grasspatch model which u can find in the assets folder:
+1 the gazebo world may missing the grasspatch model which u can find in the assets folder:
 if missing just copy paste this folder in to your local gazebo path, normally just under .gazebo/models
-5.2 if there have missing the rviz-grid-map:
+
+2 if there have missing the rviz-grid-map:
 ```bash
 sudo apt install ros-noetic-grid-map-rviz-plugin
 ```
