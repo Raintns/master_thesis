@@ -1,0 +1,24 @@
+# catkin/ROS build artifacts
+.catkin_tools/
+build/
+devel/
+install/
+logs/
+
+# python caches
+**/__pycache__/
+*.pyc
+
+# WVN outputs / experiments
+src/wild_visual_navigation/results/
+src/wild_visual_navigation/.tmp_state_dict.pt
+
+# backups
+
+
+# optional: external repos you don't want to version
+
+
+# optional: if you do NOT want to track these packages in this repo
+# src/cpr_gazebo/
+

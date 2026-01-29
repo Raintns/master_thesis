@@ -1,4 +1,0 @@
-#!/bin/bash
-
-export GAZEBO_WORLD_LAT=50.109461
-export GAZEBO_WORLD_LON=-97.318978
