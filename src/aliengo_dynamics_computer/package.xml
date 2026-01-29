@@ -75,7 +75,7 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>tf2</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
-  <exec_depend>message_filteres</exec_depend>
+  <exec_depend>message_filters</exec_depend>
   <build_depend>pinocchio</build_depend>
 
 

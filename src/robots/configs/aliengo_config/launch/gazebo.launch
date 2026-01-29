@@ -10,7 +10,7 @@
     <arg name="world_init_z"          default="0.0" />
     <arg name="world_init_heading" default="0.0" /> <!-- Initial heading of the robot in Gazebo World -->
     <arg name="enable_contact_sensor" default="false" />
-    <arg name="description_file"       default="$(find aliengo_description)/xacro/aliengo.champ.urdf"/> <!-- Path to URDF file Do not touch this. -->
+    <arg name="description_file"       default="$(find aliengo_wild_visual_navigation)/xacro/aliengo.champ.urdf"/> <!-- Path to URDF file Do not touch this. -->
 
 
     <param name="use_sim_time" value="true" />

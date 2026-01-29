@@ -12,7 +12,6 @@ depends:
 - sensor_msgs
 - roscpp
 - message_filters
-- message_filteres
 - message_generation
 - catkin
 - tf2_ros
