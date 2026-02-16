@@ -78,7 +78,7 @@ class OfflineLogger:
                 "loss_reco",
                 "step",
                 "pause_learning",
-                "scale_traversability_threshold",
+                # "scale_traversability_threshold",
             ]
         )
 
@@ -125,7 +125,7 @@ class OfflineLogger:
                 system_state_msg.loss_reco,
                 system_state_msg.step,
                 system_state_msg.pause_learning,
-                system_state_msg.scale_traversability_threshold,
+                # system_state_msg.scale_traversability_threshold,
             ]
         )
 
