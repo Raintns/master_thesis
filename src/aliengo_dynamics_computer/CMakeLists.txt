@@ -163,12 +163,12 @@ include_directories(
 add_executable(force_transformer src/force_transformer_node.cpp
                                   src/force_transformer.cpp)
 target_link_libraries(force_transformer ${catkin_LIBRARIES})
-add_dependencies(force_transformer ${catkin_EXPORTED_TARGETS})
+add_dependencies(force_transformer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(inverse_dynamics_computer src/inverse_dynamics_computer_node.cpp
                                          src/inverse_dynamics_computer.cpp)
 target_link_libraries(inverse_dynamics_computer pinocchio::pinocchio ${catkin_LIBRARIES})
-add_dependencies(inverse_dynamics_computer ${catkin_EXPORTED_TARGETS})
+add_dependencies(inverse_dynamics_computer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 #############

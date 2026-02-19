@@ -23,7 +23,18 @@ cd master_thesis
 source /opt/ros/noetic/setup.bash
 sudo apt install -y python3-rosdep
 rosdep install --from-paths src --ignore-src -r -y
-
+```
+If rosdep reports missing keys, install manually:
+```bash
+sudo apt install -y \
+  ros-noetic-ecl-threads \
+  ros-noetic-joy \
+  ros-noetic-rosserial \
+  ros-noetic-ros-controllers \
+  ros-noetic-pointcloud-to-laserscan
+```
+install the python packages
+```bash
 cd assets
 pip3 install -e ./self_supervised_segmentation
 cd ~/master_thesis/src
@@ -89,3 +100,4 @@ sudo apt install ros-noetic-grid-map-rviz-plugin
 ### 6)reference
 https://github.com/leggedrobotics/wild_visual_navigation
 https://github.com/chvmp/champ.git
+
