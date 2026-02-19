@@ -1,6 +1,11 @@
 # master_thesis (AlienGo + Wild Visual Navigation)
 
 ### 0) Prerequirement
+System Requirements:
+Ubuntu 20.04
+ROS Noetic
+Python 3.8
+
 Install Pinocchio
 ```bash
 sudo apt update
@@ -18,16 +23,16 @@ cd master_thesis
 source /opt/ros/noetic/setup.bash
 sudo apt install -y python3-rosdep
 rosdep install --from-paths src --ignore-src -r -y
+
 cd assets
 pip3 install -e ./self_supervised_segmentation
 cd ~/master_thesis/src
 pip3 install -e ./wild_visual_navigation
 ```
 
-May have following issue:
+May have following issue during install python packages:
 1)failing building wandb because of missing Go binary
 ```bash
-install Go binary first:
 sudo apt install -y golang-go
 ```
 2)missing building wheel for wandb
@@ -38,6 +43,18 @@ python -m pip install -U pip setuptools wheel
 ```bash
 python -m pip install "liegroups @ git+https://github.com/mmattamala/liegroups "
 ```
+4)if pip install liegroups have the follow error:
+```bash
+AttributeError: module 'importlib_metadata' has no attribute 'EntryPoints'
+```
+solution:
+```bash
+python3 -m pip install --user -U --force-reinstall \
+  "importlib-metadata>=4.13.0" \
+  "setuptools>=65" \
+  wheel pip
+```
+
 
 ### 3) build the ros workspace
 ```bash
@@ -61,10 +78,10 @@ roslaunch champ_teleop teleop.launch
 for the first time running with 2> >(grep -v TF_REPEATED_DATA buffer_core) will have error,so for the first time running just run without this half.
 
 ### 5) further more possible issue:
-1 the gazebo world may missing the grasspatch model which u can find in the assets folder:
+1.The gazebo world may missing the grasspatch model which can find in the assets folder:
 if missing just copy paste this folder in to your local gazebo path, normally just under .gazebo/models
 
-2 if there have missing the rviz-grid-map:
+2.if there have missing the rviz-grid-map:
 ```bash
 sudo apt install ros-noetic-grid-map-rviz-plugin
 ```
@@ -72,4 +89,3 @@ sudo apt install ros-noetic-grid-map-rviz-plugin
 ### 6)reference
 https://github.com/leggedrobotics/wild_visual_navigation
 https://github.com/chvmp/champ.git
-
