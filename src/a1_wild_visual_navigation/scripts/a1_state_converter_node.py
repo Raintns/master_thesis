@@ -60,19 +60,19 @@ for x in ["tx", "ty", "tz", "qx", "qy", "qz", "qw", "vx", "vy", "vz", "wx", "wy"
     robot_state_msg.states[4].labels[i] = x #updating vector state
     i += 1
 
-def a1_msg_callback(aliengo_state, return_msg=False):
+def a1_msg_callback(a1_state, return_msg=False):
 
     # For RobotState msg
-    robot_state_msg.header = aliengo_state.header
+    robot_state_msg.header = a1_state.header
 
     # Extract pose
-    robot_state_msg.pose.header = aliengo_state.header
-    robot_state_msg.pose.pose = aliengo_state.pose.pose
+    robot_state_msg.pose.header = a1_state.header
+    robot_state_msg.pose.pose = a1_state.pose.pose
 
     # Extract twist
-    robot_state_msg.twist.header = aliengo_state.header
-    robot_state_msg.twist.header.frame_id = aliengo_state.child_frame_id
-    robot_state_msg.twist.twist = aliengo_state.twist.twist
+    robot_state_msg.twist.header = a1_state.header
+    robot_state_msg.twist.header.frame_id = a1_state.child_frame_id
+    robot_state_msg.twist.twist = a1_state.twist.twist
 
     robot_state_msg.states[4].values[0] = robot_state_msg.pose.pose.position.x
     robot_state_msg.states[4].values[1] = robot_state_msg.pose.pose.position.y
@@ -114,14 +114,16 @@ def twist_msg_callback(msg):
 if __name__ == "__main__":
     rospy.init_node("a1_state_converter_node")
 
+    # Create publishers first so callbacks cannot fire before they exist.
+    robot_state_pub = rospy.Publisher("/wild_visual_navigation_node/robot_state", RobotState, queue_size=20)
+    ref_twiststamped_pub = rospy.Publisher("/wild_visual_navigation_node/reference_twist", TwistStamped, queue_size=20)
+    error_pub = rospy.Publisher("/wild_visual_navigation_node/error", Float32, queue_size=20)
+
     # We subscribe the odometry topic (state)
     a1_state_sub = rospy.Subscriber("/odom", Odometry, a1_msg_callback, queue_size=20)
-    robot_state_pub = rospy.Publisher("/wild_visual_navigation_node/robot_state", RobotState, queue_size=20)
 
     # And also the twist command from teleoperation
     ref_twist_sub = rospy.Subscriber("/cmd_vel", Twist, twist_msg_callback, queue_size=20)
-    ref_twiststamped_pub = rospy.Publisher("/wild_visual_navigation_node/reference_twist", TwistStamped, queue_size=20)
-    error_pub = rospy.Publisher("/wild_visual_navigation_node/error", Float32, queue_size=20)
 
     rospy.loginfo("[a1_state_converter_node] ready")
     rospy.spin()

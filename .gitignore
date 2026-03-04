@@ -17,7 +17,7 @@ src/wild_visual_navigation/.tmp_state_dict.pt
 
 
 # optional: external repos you don't want to version
-
+src/anymal_d_simple_description/
 
 # optional: if you do NOT want to track these packages in this repo
 # src/cpr_gazebo/
