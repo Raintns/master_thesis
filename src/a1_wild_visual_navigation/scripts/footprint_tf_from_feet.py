@@ -21,6 +21,7 @@ class FootprintFromFeetBroadcaster:
         self.listener = tf2_ros.TransformListener(self.tf_buffer)
         self.br = tf2_ros.TransformBroadcaster()
         self.rate = rospy.Rate(self.rate_hz)
+        self.last_pub_stamp = rospy.Time(0)
 
         rospy.loginfo(
             "[footprint_tf_from_feet] Publishing %s -> %s using feet %s (z_mode=%s)",
@@ -58,12 +59,16 @@ class FootprintFromFeetBroadcaster:
                     rospy.Time(0),
                     timeout=rospy.Duration(0.1),
                 )
+                if base_tf.header.stamp <= self.last_pub_stamp:
+                    self.rate.sleep()
+                    continue
+
                 q = base_tf.transform.rotation
                 _, _, yaw = tf_conversions.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
                 flat_q = tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, yaw)
 
                 footprint = TransformStamped()
-                footprint.header.stamp = rospy.Time.now()
+                footprint.header.stamp = base_tf.header.stamp
                 footprint.header.frame_id = self.odom_frame
                 footprint.child_frame_id = self.footprint_frame
                 footprint.transform.translation.x = float(center_x)
@@ -74,9 +79,17 @@ class FootprintFromFeetBroadcaster:
                 footprint.transform.rotation.z = flat_q[2]
                 footprint.transform.rotation.w = flat_q[3]
                 self.br.sendTransform(footprint)
+                self.last_pub_stamp = base_tf.header.stamp
 
-            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-                pass
+            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+                rospy.logwarn_throttle(
+                    5.0,
+                    "[footprint_tf_from_feet] Waiting for TF data (%s). odom=%s base=%s feet=%s",
+                    str(e),
+                    self.odom_frame,
+                    self.base_frame,
+                    ",".join(self.foot_frames),
+                )
 
             self.rate.sleep()
 
