@@ -13,6 +13,7 @@ from visualization_msgs.msg import Marker
 from gazebo_msgs.msg import LinkStates
 from geometry_msgs.msg import Pose, Transform, TransformStamped
 
+import os
 import rospkg
 import rospy
 import tf2_ros
@@ -80,7 +81,8 @@ def gazebo_callback(msg):
     t.transform.rotation.w = q[3]
     br.sendTransform(t)
 
-    pub.publish(marker)
+    if marker is not None:
+        pub.publish(marker)
     last_stamp = stamp
 
 
@@ -102,20 +104,28 @@ if __name__ == "__main__":
     tf_buffer = tf2_ros.Buffer()
     tf_listener = tf2_ros.TransformListener(tf_buffer)
 
-    marker = Marker()
-    marker.header.frame_id = world_frame_id
-    marker.header.stamp = rospy.Time.now()
-    marker.id = 0
-    marker.ns = world_frame_id
-    marker.action = Marker.ADD
-    marker.scale.x = 1.0
-    marker.scale.y = 1.0
-    marker.scale.z = 1.0
-    marker.color.a = 1.0
-    marker.pose.orientation.w = 1.0
-    marker.mesh_use_embedded_materials = True
-    marker.type = Marker.MESH_RESOURCE
-    marker.mesh_resource = f"file://{default_model_file}"
+    marker = None
+    if os.path.isfile(default_model_file):
+        marker = Marker()
+        marker.header.frame_id = world_frame_id
+        marker.header.stamp = rospy.Time.now()
+        marker.id = 0
+        marker.ns = world_frame_id
+        marker.action = Marker.ADD
+        marker.scale.x = 1.0
+        marker.scale.y = 1.0
+        marker.scale.z = 1.0
+        marker.color.a = 1.0
+        marker.pose.orientation.w = 1.0
+        marker.mesh_use_embedded_materials = True
+        marker.type = Marker.MESH_RESOURCE
+        marker.mesh_resource = f"file://{default_model_file}"
+    else:
+        rospy.logwarn(
+            "[gazebo_world_publisher] Mesh file not found at %s. "
+            "Skipping world mesh marker publishing.",
+            default_model_file,
+        )
 
     # Set subscriber of gazebo links
     gazebo_sub = rospy.Subscriber("/gazebo/link_states/", LinkStates, gazebo_callback, queue_size=10)

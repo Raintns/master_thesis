@@ -6,13 +6,14 @@
 #
 from geometry_msgs.msg import Twist, TwistStamped
 from std_msgs.msg import Float32
-import math
 from nav_msgs.msg import Odometry
 from wild_visual_navigation_msgs.msg import RobotState, CustomState
 import rospy
 
 # Preallocate messages
 robot_state_msg = RobotState()
+last_cmd_vel_msg = Twist()
+has_cmd_vel = False
 
 # Extract joint states - state 0
 joint_position = CustomState()
@@ -93,22 +94,29 @@ def a1_msg_callback(a1_state, return_msg=False):
     # Publish
     robot_state_pub.publish(robot_state_msg)
 
-
-def twist_msg_callback(msg):
-    ts = rospy.Time.now()
+    # Publish reference twist at odom rate for robust rosbag replay.
     out_msg = TwistStamped()
-    out_msg.header.stamp = ts
+    out_msg.header.stamp = a1_state.header.stamp
     out_msg.header.frame_id = "base"
-    out_msg.twist = msg
+    if has_cmd_vel:
+        out_msg.twist = last_cmd_vel_msg
+    else:
+        # Fallback when cmd_vel is absent/sparse in the bag.
+        out_msg.twist = robot_state_msg.twist.twist
 
-    x_err_ = (msg.linear.x - robot_state_msg.states[4].values[7])
-    y_err_ = (msg.linear.y - robot_state_msg.states[4].values[8])
-
+    x_err_ = out_msg.twist.linear.x - robot_state_msg.states[4].values[7]
+    y_err_ = out_msg.twist.linear.y - robot_state_msg.states[4].values[8]
     err_msg = Float32()
-    err_msg.data = (x_err_**2 + y_err_**2)/2
-    # print(f"Error is {err_msg.data}")
+    err_msg.data = (x_err_**2 + y_err_**2) / 2
     error_pub.publish(err_msg)
     ref_twiststamped_pub.publish(out_msg)
+
+
+def twist_msg_callback(msg):
+    global last_cmd_vel_msg
+    global has_cmd_vel
+    last_cmd_vel_msg = msg
+    has_cmd_vel = True
 
 
 if __name__ == "__main__":
@@ -121,7 +129,6 @@ if __name__ == "__main__":
 
     # We subscribe the odometry topic (state)
     a1_state_sub = rospy.Subscriber("/odom", Odometry, a1_msg_callback, queue_size=20)
-
     # And also the twist command from teleoperation
     ref_twist_sub = rospy.Subscriber("/cmd_vel", Twist, twist_msg_callback, queue_size=20)
 

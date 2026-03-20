@@ -927,7 +927,9 @@ class WvnLearning:
             stamp = rospy.Time(0)
 
         try:
-            res = self.tf_buffer.lookup_transform(parent_frame, child_frame, stamp, timeout=rospy.Duration(0.03))
+            # During rosbag replay, exact timestamp lookups can fail due to callback ordering.
+            # Use a slightly longer timeout and fall back to latest transform when needed.
+            res = self.tf_buffer.lookup_transform(parent_frame, child_frame, stamp, timeout=rospy.Duration(0.2))
             trans = (
                 res.transform.translation.x,
                 res.transform.translation.y,
@@ -944,8 +946,31 @@ class WvnLearning:
             rot /= np.linalg.norm(rot)
             return (trans, tuple(rot))
         except Exception:
+            # # Fallback to latest transform to be robust against sparse/out-of-order TF in replay.
+            # if stamp != rospy.Time(0):
+            #     try:
+            #         res = self.tf_buffer.lookup_transform(
+            #             parent_frame, child_frame, rospy.Time(0), timeout=rospy.Duration(0.2)
+            #         )
+            #         trans = (
+            #             res.transform.translation.x,
+            #             res.transform.translation.y,
+            #             res.transform.translation.z,
+            #         )
+            #         rot = np.array(
+            #             [
+            #                 res.transform.rotation.x,
+            #                 res.transform.rotation.y,
+            #                 res.transform.rotation.z,
+            #                 res.transform.rotation.w,
+            #             ]
+            #         )
+            #         rot /= np.linalg.norm(rot)
+            #         return (trans, tuple(rot))
+            #     except Exception:
+            #         pass
+
             if self._ros_params.verbose:
-                # print("Error in query tf: ", e)
                 rospy.logwarn(f"[{self._node_name}] Couldn't get between {parent_frame} and {child_frame}")
             return (None, None)
 
