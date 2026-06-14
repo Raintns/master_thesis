@@ -1,0 +1,24 @@
+<launch>
+  <arg name="robot_urdf" default="$(find a1_description)/urdf/a1.urdf" />
+  <arg name="joint_states_topic" default="/joint_states" />
+  <arg name="odom_topic" default="/odom" />
+  <arg name="imu_topic" default="/trunk_imu" />
+  <arg name="output_frame" default="odom" />
+  <arg name="use_contact_topics" default="true" />
+  <arg name="publish_per_foot_topics" default="true" />
+
+  <node
+    pkg="a1_pinocchio_force"
+    type="a1_contact_force_estimator_node"
+    name="a1_contact_force_estimator"
+    output="screen">
+    <rosparam command="load" file="$(find a1_pinocchio_force)/config/a1_contact_force_estimator.yaml" />
+    <param name="robot_urdf" value="$(arg robot_urdf)" />
+    <param name="joint_states_topic" value="$(arg joint_states_topic)" />
+    <param name="odom_topic" value="$(arg odom_topic)" />
+    <param name="imu_topic" value="$(arg imu_topic)" />
+    <param name="output_frame" value="$(arg output_frame)" />
+    <param name="use_contact_topics" value="$(arg use_contact_topics)" />
+    <param name="publish_per_foot_topics" value="$(arg publish_per_foot_topics)" />
+  </node>
+</launch>

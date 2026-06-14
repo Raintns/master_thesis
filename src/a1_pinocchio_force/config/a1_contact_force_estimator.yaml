@@ -1,0 +1,39 @@
+joint_states_topic: "/joint_states"
+odom_topic: "/odom"
+imu_topic: "/trunk_imu"
+output_frame: "odom"
+
+contact_frames:
+  - "FL_foot"
+  - "FR_foot"
+  - "RL_foot"
+  - "RR_foot"
+
+use_contact_topics: true
+contact_topics:
+  - "/foot_force/FL"
+  - "/foot_force/FR"
+  - "/foot_force/RL"
+  - "/foot_force/RR"
+
+contact_force_threshold: 5.0
+contact_timeout: 0.1
+publish_per_foot_topics: true
+state_sync_queue_size: 50
+state_sync_slop: 0.02
+use_imu_acceleration: true
+use_imu_angular_velocity: true
+imu_acceleration_includes_gravity: true
+imu_gravity_magnitude: 9.81
+
+# Filter the numerically differentiated joint acceleration (ddq).
+filter_joint_acceleration: true
+joint_acceleration_process_noise: 0.5
+joint_acceleration_measurement_noise: 4.0
+joint_acceleration_initial_covariance: 1.0
+
+# Filter the numerically differentiated base acceleration from odom twist.
+filter_base_acceleration: true
+base_acceleration_process_noise: 0.5
+base_acceleration_measurement_noise: 4.0
+base_acceleration_initial_covariance: 1.0

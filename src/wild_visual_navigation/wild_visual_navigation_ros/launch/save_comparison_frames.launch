@@ -1,0 +1,45 @@
+<launch>
+  <arg name="output_dir" default="/tmp/wvn_comparison"/>
+  <arg name="raw_topic" default="/wild_visual_navigation_node/front/image_input"/>
+  <arg name="trav_topic" default="/wild_visual_navigation_node/front/traversability"/>
+  <arg name="confidence_topic" default="/wild_visual_navigation_node/front/confidence"/>
+  <arg name="frame_indices" default=""/>
+  <arg name="save_every_n" default="30"/>
+  <arg name="start_frame" default="0"/>
+  <arg name="max_saved_frames" default="0"/>
+  <arg name="queue_size" default="10"/>
+  <arg name="slop" default="0.2"/>
+  <arg name="overlay_alpha" default="0.45"/>
+  <arg name="colormap" default="RdYlBu"/>
+  <arg name="scalar_topic_max_age" default="0.2"/>
+  <arg name="instant_traversability_topic" default="/wild_visual_navigation_node/instant_traversability"/>
+  <arg name="velocity_error_topic" default="/wild_visual_navigation_node/debug/velocity_tracking_error_mse"/>
+  <arg name="velocity_error_filtered_topic" default="/wild_visual_navigation_node/debug/velocity_tracking_error_filtered"/>
+  <arg name="force_error_topic" default="/wild_visual_navigation_node/debug/force_error_mse"/>
+  <arg name="force_error_filtered_topic" default="/wild_visual_navigation_node/debug/force_error_filtered"/>
+
+  <node
+    name="wvn_comparison_frame_saver"
+    pkg="wild_visual_navigation_ros"
+    type="save_comparison_frames.py"
+    output="screen">
+    <param name="output_dir" value="$(arg output_dir)"/>
+    <param name="raw_topic" value="$(arg raw_topic)"/>
+    <param name="trav_topic" value="$(arg trav_topic)"/>
+    <param name="confidence_topic" value="$(arg confidence_topic)"/>
+    <param name="frame_indices" value="$(arg frame_indices)"/>
+    <param name="save_every_n" value="$(arg save_every_n)"/>
+    <param name="start_frame" value="$(arg start_frame)"/>
+    <param name="max_saved_frames" value="$(arg max_saved_frames)"/>
+    <param name="queue_size" value="$(arg queue_size)"/>
+    <param name="slop" value="$(arg slop)"/>
+    <param name="overlay_alpha" value="$(arg overlay_alpha)"/>
+    <param name="colormap" value="$(arg colormap)"/>
+    <param name="scalar_topic_max_age" value="$(arg scalar_topic_max_age)"/>
+    <param name="instant_traversability_topic" value="$(arg instant_traversability_topic)"/>
+    <param name="velocity_error_topic" value="$(arg velocity_error_topic)"/>
+    <param name="velocity_error_filtered_topic" value="$(arg velocity_error_filtered_topic)"/>
+    <param name="force_error_topic" value="$(arg force_error_topic)"/>
+    <param name="force_error_filtered_topic" value="$(arg force_error_filtered_topic)"/>
+  </node>
+</launch>

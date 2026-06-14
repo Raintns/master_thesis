@@ -1,46 +1,67 @@
 <launch>
-    <!-- Arguments -->
     <arg name="camera_file"       default="$(find a1_wild_visual_navigation)/config/wild_visual_navigation/camera.yaml"/>
     <arg name="params_file"       default="$(find a1_wild_visual_navigation)/config/wild_visual_navigation/a1.yaml"/>
     <arg name="overlay_images"    default="True"/>
-    <!-- <arg name="publish_footprint_tf" default="False"/>
-    <arg name="footprint_ground_z" default="0.0"/> -->
+    <arg name="launch_view"       default="True"/>
+    <arg name="rviz_config"       default="open_source.rviz"/>
+    <arg name="rviz_name"         default="wild_visual_navigation_rviz"/>
+    <arg name="load_robot_description" default="True"/>
+    <arg name="user_debug"        default="false"/>
     <arg name="publish_footprint_from_feet_tf" default="True"/>
     <arg name="footprint_from_feet_use_zero_ground_z" default="True"/>
+    <arg name="sigmoid_slope" default="20.0"/>
+    <arg name="sigmoid_cutoff" default="0.25"/>
 
-    <include file="$(find wild_visual_navigation_ros)/launch/wild_visual_navigation.launch">
-        <arg name="camera_file"    value="$(arg camera_file)"/>
-        <arg name="params_file"    value="$(arg params_file)"/>
-        <arg name="overlay_images" value="$(arg overlay_images)"/>
+    <group if="$(arg load_robot_description)">
+        <param name="robot_description"
+               command="$(find xacro)/xacro --inorder '$(find a1_description)/xacro/robot.xacro' DEBUG:=$(arg user_debug)"/>
+    </group>
+
+    <rosparam command="delete" param="wvn_learning_node"/>
+    <rosparam command="delete" param="wvn_feature_extractor_node"/>
+
+    <rosparam command="load" file="$(arg params_file)" ns="wvn_learning_node"/>
+    <rosparam command="load" file="$(arg camera_file)" ns="wvn_learning_node"/>
+    <rosparam command="load" file="$(arg params_file)" ns="wvn_feature_extractor_node"/>
+    <rosparam command="load" file="$(arg camera_file)" ns="wvn_feature_extractor_node"/>
+
+    <node name="wvn_learning_node"
+          pkg="wild_visual_navigation_ros"
+          type="wvn_learning_node.py"
+          output="screen">
+        <param name="reload_default_params" value="False" />
+        <param name="sigmoid_slope" value="$(arg sigmoid_slope)" />
+        <param name="sigmoid_cutoff" value="$(arg sigmoid_cutoff)" />
+    </node>
+
+    <node name="wvn_feature_extractor_node"
+          pkg="wild_visual_navigation_ros"
+          type="wvn_feature_extractor_node.py"
+          output="screen">
+        <param name="reload_default_params" value="False" />
+    </node>
+
+    <include if="$(arg overlay_images)" file="$(find wild_visual_navigation_ros)/launch/overlay_images.launch"/>
+
+    <include if="$(arg launch_view)" file="$(find a1_wild_visual_navigation)/launch/view.launch">
+        <arg name="rviz_config" value="$(arg rviz_config)"/>
+        <arg name="name"        value="$(arg rviz_name)"/>
     </include>
 
-      <!-- a1 state converter required by WVN -->
-  <node name="a1_state_converter_node" pkg="a1_wild_visual_navigation" type="a1_state_converter_node.py"/>
+    <node name="a1_state_converter_node"
+          pkg="a1_wild_visual_navigation"
+          type="a1_state_converter_node.py"/>
 
-  <!-- <node if="$(arg publish_footprint_tf)"
-        name="footprint_tf_publisher"
-        pkg="a1_wild_visual_navigation"
-        type="footprint_tf_publisher.py"
-        output="screen">
-    <param name="parent_frame" value="odom"/>
-    <param name="base_frame" value="base"/>
-    <param name="footprint_frame" value="footprint"/>
-    <param name="ground_z" value="$(arg footprint_ground_z)"/>
-    <param name="rate" value="50.0"/>
-  </node> -->
-
-  <node if="$(arg publish_footprint_from_feet_tf)"
-        name="footprint_tf_from_feet"
-        pkg="a1_wild_visual_navigation"
-        type="footprint_tf_from_feet.py"
-        output="screen">
-    <param name="odom_frame" value="odom"/>
-    <param name="base_frame" value="base"/>
-    <param name="footprint_frame" value="footprint"/>
-    <param name="use_zero_ground_z" value="$(arg footprint_from_feet_use_zero_ground_z)"/>
-    <param name="rate" value="50.0"/>
-    <rosparam param="foot_frames">["FL_foot", "FR_foot", "RL_foot", "RR_foot"]</rosparam>
-  </node>
-
-  </launch>
-  
+    <node if="$(arg publish_footprint_from_feet_tf)"
+          name="footprint_tf_from_feet"
+          pkg="a1_wild_visual_navigation"
+          type="footprint_tf_from_feet.py"
+          output="screen">
+        <param name="odom_frame" value="odom"/>
+        <param name="base_frame" value="base"/>
+        <param name="footprint_frame" value="footprint"/>
+        <param name="use_zero_ground_z" value="$(arg footprint_from_feet_use_zero_ground_z)"/>
+        <param name="rate" value="50.0"/>
+        <rosparam param="foot_frames">["FL_foot", "FR_foot", "RL_foot", "RR_foot"]</rosparam>
+    </node>
+</launch>

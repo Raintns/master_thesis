@@ -17,7 +17,7 @@ from wild_visual_navigation.utils import AnomalyLoss
 
 import rospy
 from sensor_msgs.msg import Image, CameraInfo, CompressedImage
-from std_msgs.msg import MultiArrayDimension
+from std_msgs.msg import Float32, MultiArrayDimension
 
 import torch
 import numpy as np
@@ -120,6 +120,24 @@ class WvnFeatureExtractor:
 
         self._camera_handler = {}
         self._camera_scheduler = Scheduler()
+        self._confidence_generator_mean_pub = rospy.Publisher(
+            "/wild_visual_navigation_node/debug/confidence_generator_mean",
+            Float32,
+            queue_size=1,
+            latch=True,
+        )
+        self._confidence_generator_std_pub = rospy.Publisher(
+            "/wild_visual_navigation_node/debug/confidence_generator_std",
+            Float32,
+            queue_size=1,
+            latch=True,
+        )
+        self._confidence_generator_var_pub = rospy.Publisher(
+            "/wild_visual_navigation_node/debug/confidence_generator_var",
+            Float32,
+            queue_size=1,
+            latch=True,
+        )
 
         if self._ros_params.verbose:
             # DEBUG Logging
@@ -234,6 +252,27 @@ class WvnFeatureExtractor:
                     queue_size=1,
                 )
                 self._camera_handler[cam]["imagefeat_pub"] = imagefeat_pub
+
+        self._publish_confidence_generator_stats()
+
+    def _confidence_generator_scalar(self, value):
+        if hasattr(value, "item"):
+            return float(value.item())
+        return float(value)
+
+    def _publish_confidence_generator_stats(self):
+        mean = self._confidence_generator_scalar(self._confidence_generator.mean)
+        std = self._confidence_generator_scalar(self._confidence_generator.std)
+        var = self._confidence_generator_scalar(self._confidence_generator.var)
+
+        self._confidence_generator_mean_pub.publish(Float32(data=mean))
+        self._confidence_generator_std_pub.publish(Float32(data=std))
+        self._confidence_generator_var_pub.publish(Float32(data=var))
+
+        if self._ros_params.verbose:
+            self._log_data["confidence_generator_mean"] = mean
+            self._log_data["confidence_generator_std"] = std
+            self._log_data["confidence_generator_var"] = var
 
     def status_thread_loop(self):
         rate = rospy.Rate(self._ros_params.status_thread_rate)
@@ -440,8 +479,9 @@ class WvnFeatureExtractor:
                         self._confidence_generator.var = cg["var"]
                         self._confidence_generator.mean = cg["mean"]
                         self._confidence_generator.std = cg["std"]
+                        self._publish_confidence_generator_stats()
 
-                    if self._ros_params.verbose:
+                    if self._ros_params.verbose and "confidence_generator" in new_model_state_dict.keys():
                         m, s, v = cg["mean"].item(), cg["std"].item(), cg["var"].item()
                         rospy.loginfo(f"[{self._node_name}] Loaded Confidence Generator {m}, std {s} var {v}")
 

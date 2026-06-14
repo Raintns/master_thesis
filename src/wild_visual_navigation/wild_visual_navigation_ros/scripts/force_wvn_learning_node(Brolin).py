@@ -10,7 +10,7 @@ from wild_visual_navigation.traversability_estimator import TraversabilityEstima
 from wild_visual_navigation.traversability_estimator import MissionNode, SupervisionNode
 import wild_visual_navigation_ros.ros_converter as rc
 from wild_visual_navigation_ros.reload_rosparams import reload_rosparams
-from wild_visual_navigation_msgs.msg import CustomState, RobotState, SystemState, ImageFeatures
+from wild_visual_navigation_msgs.msg import RobotState, SystemState, ImageFeatures
 from wild_visual_navigation.visu import LearningVisualizer
 from wild_visual_navigation_msgs.srv import (
     LoadCheckpoint,
@@ -42,29 +42,11 @@ from typing import Optional
 import traceback
 import signal
 import sys
+from aliengo_dynamics_computer.msg import ReactionForce
 
 
 def time_func():
     return rospy.get_time()
-
-
-TWIST_LABELS = ["vx", "vy", "vz", "wx", "wy", "wz"]
-TRACKED_VELOCITY_LABELS = ["vx", "vy"]
-
-
-def tensor_to_custom_state(name, labels, tensor):
-    msg = CustomState()
-    msg.name = name
-    msg.labels = list(labels)
-    msg.values = [float(value) for value in tensor.detach().cpu().view(-1).tolist()]
-    msg.dim = len(msg.values)
-    return msg
-
-
-def scalar_from_tensor(value):
-    if isinstance(value, torch.Tensor):
-        return float(value.detach().cpu().view(-1)[0].item())
-    return float(value)
 
 
 class WvnLearning:
@@ -117,8 +99,8 @@ class WvnLearning:
             kf_meas_cov=10,
             kf_outlier_rejection="huber",
             kf_outlier_rejection_delta=0.5,
-            sigmoid_slope=self._sigmoid_slope,
-            sigmoid_cutoff=self._sigmoid_cutoff,
+            sigmoid_slope=20,
+            sigmoid_cutoff=0.25,  # 0.2
             untraversable_thr=self._ros_params.untraversable_thr,  # 0.1
             time_horizon=0.05,
             graph_max_length=1,
@@ -215,9 +197,6 @@ class WvnLearning:
             self._params.loss.confidence_std_factor = self._ros_params.confidence_std_factor
             self._params.loss.w_temp = 0
 
-        self._sigmoid_slope = float(rospy.get_param("~sigmoid_slope", 20.0))
-        self._sigmoid_cutoff = float(rospy.get_param("~sigmoid_cutoff", 0.25))
-
         # Parse operation modes
         if self._ros_params.mode == WVNMode.ONLINE:
             rospy.logwarn(
@@ -254,11 +233,11 @@ class WvnLearning:
             # Robot state callback
             robot_state_sub = message_filters.Subscriber(self._ros_params.robot_state_topic, RobotState)
             cache1 = message_filters.Cache(robot_state_sub, 10)  # noqa: F841
-            desired_twist_sub = message_filters.Subscriber(self._ros_params.desired_twist_topic, TwistStamped)
-            cache2 = message_filters.Cache(desired_twist_sub, 10)  # noqa: F841
+            desired_force_sub = message_filters.Subscriber(self._ros_params.desired_force_topic, ReactionForce)
+            cache2 = message_filters.Cache(desired_force_sub, 10)  # noqa: F841
 
             self._robot_state_sub = message_filters.ApproximateTimeSynchronizer(
-                [robot_state_sub, desired_twist_sub], queue_size=10, slop=0.5
+                [robot_state_sub, desired_force_sub], queue_size=10, slop=0.5
             )
 
             rospy.loginfo(
@@ -266,9 +245,9 @@ class WvnLearning:
             )
             rospy.wait_for_message(self._ros_params.robot_state_topic, RobotState)
             rospy.loginfo(
-                f"[{self._node_name}] Start waiting for TwistStamped topic {self._ros_params.desired_twist_topic} being published!"
+                f"[{self._node_name}] Start waiting for ReactionForce topic {self._ros_params.desired_force_topic} being published!"
             )
-            rospy.wait_for_message(self._ros_params.desired_twist_topic, TwistStamped)
+            rospy.wait_for_message(self._ros_params.desired_force_topic, ReactionForce)
             self._robot_state_sub.registerCallback(self.robot_state_callback)
 
             self._camera_handler = {}
@@ -351,53 +330,8 @@ class WvnLearning:
             Float32,
             queue_size=10,
         )
-        self._pub_supervision_traversability = rospy.Publisher(
-            "/wild_visual_navigation_node/debug/supervision_traversability",
-            Float32,
-            queue_size=10,
-        )
-        self._pub_supervision_traversability_var = rospy.Publisher(
-            "/wild_visual_navigation_node/debug/supervision_traversability_var",
-            Float32,
-            queue_size=10,
-        )
-        self._pub_supervision_is_untraversable = rospy.Publisher(
-            "/wild_visual_navigation_node/debug/supervision_is_untraversable",
-            Float32,
-            queue_size=10,
-        )
-        self._pub_velocity_supervision_traversability = rospy.Publisher(
-            "/wild_visual_navigation_node/debug/velocity_supervision_traversability",
-            Float32,
-            queue_size=10,
-        )
         self._pub_system_state = rospy.Publisher(
             "/wild_visual_navigation_node/system_state", SystemState, queue_size=10
-        )
-        self._pub_current_twist = rospy.Publisher(
-            "/wild_visual_navigation_node/debug/current_twist",
-            CustomState,
-            queue_size=10,
-        )
-        self._pub_desired_twist = rospy.Publisher(
-            "/wild_visual_navigation_node/debug/desired_twist",
-            CustomState,
-            queue_size=10,
-        )
-        self._pub_twist_error = rospy.Publisher(
-            "/wild_visual_navigation_node/debug/twist_error",
-            CustomState,
-            queue_size=10,
-        )
-        self._pub_velocity_tracking_error_mse = rospy.Publisher(
-            "/wild_visual_navigation_node/debug/velocity_tracking_error_mse",
-            Float32,
-            queue_size=10,
-        )
-        self._pub_velocity_tracking_error_filtered = rospy.Publisher(
-            "/wild_visual_navigation_node/debug/velocity_tracking_error_filtered",
-            Float32,
-            queue_size=10,
         )
 
         # Services
@@ -407,18 +341,6 @@ class WvnLearning:
 
         self._pause_learning_service = rospy.Service("~pause_learning", SetBool, self.pause_learning_callback)
         self._reset_service = rospy.Service("~reset", Trigger, self.reset_callback)
-
-    def _publish_supervision_debug(self, traversability, traversability_var, is_untraversable, source=None):
-        traversability_value = scalar_from_tensor(traversability)
-        traversability_var_value = scalar_from_tensor(traversability_var)
-        is_untraversable_value = float(bool(is_untraversable))
-
-        self._pub_supervision_traversability.publish(Float32(data=traversability_value))
-        self._pub_supervision_traversability_var.publish(Float32(data=traversability_var_value))
-        self._pub_supervision_is_untraversable.publish(Float32(data=is_untraversable_value))
-
-        if source == "velocity":
-            self._pub_velocity_supervision_traversability.publish(Float32(data=traversability_value))
 
     @accumulate_time
     def learning_thread_loop(self):
@@ -512,7 +434,7 @@ class WvnLearning:
         self._learning_thread_stop_event.clear()
 
     @accumulate_time
-    def robot_state_callback(self, state_msg, desired_twist_msg: TwistStamped):
+    def robot_state_callback(self, state_msg, desired_force_msg: ReactionForce):
         """Main callback to process supervision info (robot state)
 
         Args:
@@ -574,65 +496,25 @@ class WvnLearning:
             supervision_tensor, supervision_labels = rc.wvn_robot_state_to_torch(
                 state_msg, device=self._ros_params.device
             )
-            current_twist_tensor = rc.twist_stamped_to_torch(state_msg.twist, device=self._ros_params.device)
-            desired_twist_tensor = rc.twist_stamped_to_torch(desired_twist_msg, device=self._ros_params.device)
-            twist_error_tensor = desired_twist_tensor - current_twist_tensor
-            tracked_current_twist_tensor = rc.twist_stamped_to_torch(
-                state_msg.twist,
-                components=TRACKED_VELOCITY_LABELS,
-                device=self._ros_params.device,
-            )
-            tracked_desired_twist_tensor = rc.twist_stamped_to_torch(
-                desired_twist_msg,
-                components=TRACKED_VELOCITY_LABELS,
-                device=self._ros_params.device,
-            )
-            raw_velocity_tracking_error = torch.nn.functional.mse_loss(
-                tracked_current_twist_tensor,
-                tracked_desired_twist_tensor,
-            )
+
+            force_components = ["FLz", "FRz", "RLz", "RRz"]
+            current_force_tensor = rc.robot_force_state_to_torch(state_msg, components=force_components, device=self._ros_params.device)
+            desired_force_tensor = rc.reaction_force_to_torch(desired_force_msg.reaction_forces, components= force_components, device=self._ros_params.device)
 
             # Update traversability
             (
                 traversability,
                 traversability_var,
                 is_untraversable,
-            ) = self._supervision_generator.update_velocity_tracking(
-                current_twist_tensor, desired_twist_tensor, velocities=TRACKED_VELOCITY_LABELS
-            )
-            filtered_velocity_tracking_error = float(
-                self._supervision_generator._state.detach().cpu().view(-1)[0].item()
-            )
+                
+            ) = self._supervision_generator.update_force_tracking(current_force_tensor, desired_force_tensor)
 
-            self._pub_current_twist.publish(
-                tensor_to_custom_state("current_twist", TWIST_LABELS, current_twist_tensor)
-            )
-            self._pub_desired_twist.publish(
-                tensor_to_custom_state("desired_twist", TWIST_LABELS, desired_twist_tensor)
-            )
-            self._pub_twist_error.publish(
-                tensor_to_custom_state("twist_error", TWIST_LABELS, twist_error_tensor)
-            )
-            self._pub_velocity_tracking_error_mse.publish(
-                Float32(data=float(raw_velocity_tracking_error.item()))
-            )
-            self._pub_velocity_tracking_error_filtered.publish(
-                Float32(data=filtered_velocity_tracking_error)
-            )
-            self._publish_supervision_debug(
-                traversability,
-                traversability_var,
-                is_untraversable,
-                source="velocity",
-            )
-
-            # Create supervision node for the graph
             supervision_node = SupervisionNode(
                 timestamp=ts,
                 pose_base_in_world=pose_base_in_world,
                 pose_footprint_in_base=pose_footprint_in_base,
-                twist_in_base=current_twist_tensor,
-                desired_twist_in_base=desired_twist_tensor,
+                twist_in_base=current_force_tensor,
+                desired_twist_in_base=desired_force_tensor,
                 width=self._ros_params.robot_width,
                 length=self._ros_params.robot_length,
                 height=self._ros_params.robot_height,
@@ -1045,8 +927,6 @@ class WvnLearning:
             stamp = rospy.Time(0)
 
         try:
-            # During rosbag replay, exact timestamp lookups can fail due to callback ordering.
-            # Use a slightly longer timeout and fall back to latest transform when needed.
             res = self.tf_buffer.lookup_transform(parent_frame, child_frame, stamp, timeout=rospy.Duration(0.2))
             trans = (
                 res.transform.translation.x,
@@ -1064,31 +944,8 @@ class WvnLearning:
             rot /= np.linalg.norm(rot)
             return (trans, tuple(rot))
         except Exception:
-            # # Fallback to latest transform to be robust against sparse/out-of-order TF in replay.(use for sparse timestamps or when TF is published after the callback)
-            # if stamp != rospy.Time(0):
-            #     try:
-            #         res = self.tf_buffer.lookup_transform(
-            #             parent_frame, child_frame, rospy.Time(0), timeout=rospy.Duration(0.2)
-            #         )
-            #         trans = (
-            #             res.transform.translation.x,
-            #             res.transform.translation.y,
-            #             res.transform.translation.z,
-            #         )
-            #         rot = np.array(
-            #             [
-            #                 res.transform.rotation.x,
-            #                 res.transform.rotation.y,
-            #                 res.transform.rotation.z,
-            #                 res.transform.rotation.w,git 
-            #             ]
-            #         )
-            #         rot /= np.linalg.norm(rot)
-            #         return (trans, tuple(rot))
-            #     except Exception:
-            #         pass
-
             if self._ros_params.verbose:
+                # print("Error in query tf: ", e)
                 rospy.logwarn(f"[{self._node_name}] Couldn't get between {parent_frame} and {child_frame}")
             return (None, None)
 

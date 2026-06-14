@@ -1,0 +1,92 @@
+<launch>
+  <arg name="camera_file" default="$(find a1_wild_visual_navigation)/config/wild_visual_navigation/camera.yaml"/>
+  <arg name="params_file" default="$(find a1_wild_visual_navigation)/config/wild_visual_navigation/a1_force.yaml"/>
+  <arg name="overlay_images" default="True"/>
+  <arg name="launch_view" default="True"/>
+  <arg name="rviz_config" default="open_source.rviz"/>
+  <arg name="rviz_name" default="wild_visual_navigation_rviz"/>
+  <arg name="load_robot_description" default="True"/>
+  <arg name="user_debug" default="false"/>
+  <arg name="publish_footprint_from_feet_tf" default="True"/>
+  <arg name="footprint_from_feet_use_zero_ground_z" default="True"/>
+  <arg name="launch_force_estimator" default="true"/>
+  <arg name="use_contact_topics" default="true"/>
+  <arg name="force_frame" default="odom"/>
+  <arg name="imu_topic" default="/trunk_imu"/>
+  <arg name="reference_force" default="134.79921"/>
+  <arg name="sigmoid_slope" default="20.0"/>
+  <arg name="sigmoid_cutoff" default="0.25"/>
+
+  <group if="$(arg load_robot_description)">
+    <param name="robot_description"
+           command="$(find xacro)/xacro --inorder '$(find a1_description)/xacro/robot.xacro' DEBUG:=$(arg user_debug)"/>
+  </group>
+
+  <include if="$(arg launch_force_estimator)" file="$(find a1_pinocchio_force)/launch/a1_contact_force_estimator.launch">
+    <arg name="joint_states_topic" value="/joint_states"/>
+    <arg name="odom_topic" value="/odom"/>
+    <arg name="imu_topic" value="$(arg imu_topic)"/>
+    <arg name="output_frame" value="$(arg force_frame)"/>
+    <arg name="use_contact_topics" value="$(arg use_contact_topics)"/>
+  </include>
+
+  <rosparam command="delete" param="wvn_learning_node"/>
+  <rosparam command="delete" param="wvn_feature_extractor_node"/>
+
+  <rosparam command="load" file="$(arg params_file)" ns="wvn_learning_node"/>
+  <rosparam command="load" file="$(arg camera_file)" ns="wvn_learning_node"/>
+  <rosparam command="load" file="$(arg params_file)" ns="wvn_feature_extractor_node"/>
+  <rosparam command="load" file="$(arg camera_file)" ns="wvn_feature_extractor_node"/>
+
+  <node name="wvn_learning_node"
+        pkg="wild_visual_navigation_ros"
+        type="force_wvn_learning_node.py"
+        output="screen">
+    <param name="reload_default_params" value="False" />
+    <param name="enable_raw_force_debug" value="true" />
+    <param name="sigmoid_slope" value="$(arg sigmoid_slope)" />
+    <param name="sigmoid_cutoff" value="$(arg sigmoid_cutoff)" />
+  </node>
+
+  <node name="wvn_feature_extractor_node"
+        pkg="wild_visual_navigation_ros"
+        type="wvn_feature_extractor_node.py"
+        output="screen">
+    <param name="reload_default_params" value="False" />
+  </node>
+
+  <include if="$(arg overlay_images)" file="$(find wild_visual_navigation_ros)/launch/overlay_images.launch"/>
+
+  <include if="$(arg launch_view)" file="$(find a1_wild_visual_navigation)/launch/view.launch">
+    <arg name="rviz_config" value="$(arg rviz_config)"/>
+    <arg name="name" value="$(arg rviz_name)"/>
+  </include>
+
+  <node name="a1_force_state_converter_node"
+        pkg="a1_wild_visual_navigation"
+        type="a1_force_state_converter_node.py"
+        output="screen">
+    <param name="target_force_frame" value="$(arg force_frame)"/>
+    <param name="reference_force" value="$(arg reference_force)"/>
+  </node>
+
+  <node name="a1_force_reference_adapter_node"
+        pkg="a1_wild_visual_navigation"
+        type="a1_force_reference_adapter_node.py"
+        output="screen">
+    <param name="reference_force" value="$(arg reference_force)"/>
+  </node>
+
+  <node if="$(arg publish_footprint_from_feet_tf)"
+        name="footprint_tf_from_feet"
+        pkg="a1_wild_visual_navigation"
+        type="footprint_tf_from_feet.py"
+        output="screen">
+    <param name="odom_frame" value="odom"/>
+    <param name="base_frame" value="base"/>
+    <param name="footprint_frame" value="footprint"/>
+    <param name="use_zero_ground_z" value="$(arg footprint_from_feet_use_zero_ground_z)"/>
+    <param name="rate" value="50.0"/>
+    <rosparam param="foot_frames">["FL_foot", "FR_foot", "RL_foot", "RR_foot"]</rosparam>
+  </node>
+</launch>

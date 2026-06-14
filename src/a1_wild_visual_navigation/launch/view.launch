@@ -3,5 +3,5 @@
   <arg name="name"              default="wild_visual_navigation_rviz" />
 
   <!-- Use RViz-->
-    <node name="$(arg name)" pkg="rviz" type="rviz" args="-d $(find wild_visual_navigation_jackal)/config/rviz/$(arg rviz_config)"/>
+    <node name="$(arg name)" pkg="rviz" type="rviz" args="-d $(find a1_wild_visual_navigation)/config/rviz/$(arg rviz_config)"/>
 </launch>

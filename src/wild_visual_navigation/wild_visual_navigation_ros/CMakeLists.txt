@@ -7,6 +7,8 @@ cmake_minimum_required(VERSION 3.0.2)
 project(wild_visual_navigation_ros)
 
 find_package(catkin REQUIRED COMPONENTS
+  a1_pinocchio_force
+  geometry_msgs
   rospy
   nav_msgs
   sensor_msgs
@@ -26,4 +28,5 @@ catkin_install_python(PROGRAMS  scripts/wvn_feature_extractor_node.py
                                 scripts/smart_carrot.py
                                 scripts/rosbag_play.sh
                                 scripts/force_wvn_learning_node.py
+                                scripts/save_comparison_frames.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

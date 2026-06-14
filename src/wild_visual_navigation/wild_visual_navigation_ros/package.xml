@@ -13,10 +13,15 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>rospy</depend>
+  <depend>message_filters</depend>
+  <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>cv_bridge</depend>
   <depend>wild_visual_navigation_msgs</depend>
+  <build_depend>a1_pinocchio_force</build_depend>
+  <exec_depend>a1_pinocchio_force</exec_depend>
   <build_depend>aliengo_dynamics_computer</build_depend>
   <exec_depend>aliengo_dynamics_computer</exec_depend>
 </package>

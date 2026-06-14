@@ -1,0 +1,54 @@
+<launch>
+  <!--
+    Replay-oriented WVN launch for the ETH/ANYmal open-source bag.
+    The bag already provides:
+      - /wild_visual_navigation_node/robot_state
+      - /motion_reference/command_twist
+      - /clock
+      - resized wide-angle camera topics
+    so this launch only needs the generic WVN nodes plus optional frame saving.
+  -->
+
+  <arg name="camera" default="wide_angle_dual_resize"/>
+  <arg name="stack" default="anybotics"/>
+  <arg name="params_file" default="$(find wild_visual_navigation_ros)/config/wild_visual_navigation/default.yaml"/>
+  <arg name="reload_default_params" default="False"/>
+
+  <arg name="save_frames" default="false"/>
+  <arg name="frame_output_dir" default="$(env HOME)/github_upload/Result/eth_velocity_replication/wvn_frames"/>
+  <arg name="frame_indices" default=""/>
+  <arg name="save_every_n" default="30"/>
+  <arg name="start_frame" default="0"/>
+  <arg name="max_saved_frames" default="0"/>
+  <arg name="queue_size" default="10"/>
+  <arg name="slop" default="0.2"/>
+  <arg name="overlay_alpha" default="0.45"/>
+  <arg name="colormap" default="RdYlBu"/>
+  <arg name="scalar_topic_max_age" default="0.2"/>
+
+  <include file="$(find wild_visual_navigation_anymal)/launch/wild_visual_navigation.launch">
+    <arg name="camera" value="$(arg camera)"/>
+    <arg name="stack" value="$(arg stack)"/>
+    <arg name="params_file" value="$(arg params_file)"/>
+    <arg name="reload_default_params" value="$(arg reload_default_params)"/>
+  </include>
+
+  <include if="$(arg save_frames)" file="$(find wild_visual_navigation_ros)/launch/save_comparison_frames.launch">
+    <arg name="output_dir" value="$(arg frame_output_dir)"/>
+    <arg name="raw_topic" value="/wild_visual_navigation_node/front/image_input"/>
+    <arg name="trav_topic" value="/wild_visual_navigation_node/front/traversability"/>
+    <arg name="confidence_topic" value="/wild_visual_navigation_node/front/confidence"/>
+    <arg name="frame_indices" value="$(arg frame_indices)"/>
+    <arg name="save_every_n" value="$(arg save_every_n)"/>
+    <arg name="start_frame" value="$(arg start_frame)"/>
+    <arg name="max_saved_frames" value="$(arg max_saved_frames)"/>
+    <arg name="queue_size" value="$(arg queue_size)"/>
+    <arg name="slop" value="$(arg slop)"/>
+    <arg name="overlay_alpha" value="$(arg overlay_alpha)"/>
+    <arg name="colormap" value="$(arg colormap)"/>
+    <arg name="scalar_topic_max_age" value="$(arg scalar_topic_max_age)"/>
+    <arg name="instant_traversability_topic" value="/wild_visual_navigation_node/instant_traversability"/>
+    <arg name="velocity_error_topic" value="/wild_visual_navigation_node/debug/velocity_tracking_error_mse"/>
+    <arg name="velocity_error_filtered_topic" value="/wild_visual_navigation_node/debug/velocity_tracking_error_filtered"/>
+  </include>
+</launch>

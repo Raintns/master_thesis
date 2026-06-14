@@ -17,9 +17,13 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>message_filters</depend>
   <depend>tf2_ros</depend>
   <depend>tf_conversions</depend>
+  <depend>wild_visual_navigation_msgs</depend>
   <depend>wild_visual_navigation_ros</depend>
+  <depend>a1_pinocchio_force</depend>
+  <depend>aliengo_dynamics_computer</depend>
 
   <exec_depend>gazebo_ros</exec_depend>
   <export>

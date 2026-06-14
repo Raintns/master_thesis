@@ -1,7 +1,7 @@
 # Input topics
 robot_state_topic: "/wild_visual_navigation_node/robot_state"
 desired_twist_topic: "/wild_visual_navigation_node/reference_twist"
-desired_force_topic: "/unused_force"   #the original wvn node doesnt need this topic.
+desired_force_topic: "/a1_force_wvn/reference_reaction_force"
 
 # Relevant frames
 fixed_frame: odom
