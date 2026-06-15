@@ -73,7 +73,7 @@ source source /opt/ros/noetic/setup.bash
 catkin build
 ```
 
-### 4) running code:
+### 4) running code(brolin's):
 in separate terminal run the following code:
 ```bash
 cd master_thesis
@@ -88,6 +88,15 @@ roslaunch champ_teleop teleop.launch
 ```
 for the first time running with 2> >(grep -v TF_REPEATED_DATA buffer_core) will have error,so for the first time running just run without this half.
 
+
+for a1 repo:
+```bash
+roslaunch a1_wild_visual_navigation a1_wild_visual_navigation.launch
+roslaunch a1_wild_visual_navigation a1_force_wild_visual_navigation.launch
+```
+for rosbag and robot setting,please refer to document:
+https://gut-rgi.atlassian.net/wiki/x/AQA3Bw
+
 ### 5) further more possible issue:
 1.The gazebo world may missing the grasspatch model which can find in the assets folder:
 if missing just copy paste this folder in to your local gazebo path, normally just under .gazebo/models
@@ -99,5 +108,5 @@ sudo apt install ros-noetic-grid-map-rviz-plugin
 
 ### 6)reference
 https://github.com/leggedrobotics/wild_visual_navigation
-https://github.com/chvmp/champ.git
+
 
